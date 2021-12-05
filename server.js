@@ -64,6 +64,23 @@ app.put("/api/workouts/:id", (req, res) => {
   );
 });
 
+app.post("api/workouts", (req, res) => {
+  db.workouts.create(
+    {
+      $set: {
+        type: req.body.type,
+        name: req.body.name,
+        weight: req.body.weight,
+        sets: req.body.sets,
+        reps: req.body.reps,
+        duration: req.body.duration,
+        distance: req.body.distance,
+        modified: Date.now()
+      }
+    },
+  )
+});
+
 app.listen(3000, () => {
   console.log("App running on port 3000!");
 });
