@@ -12,8 +12,8 @@ app.use(express.json());
 
 app.use(express.static("public"));
 
-const databaseUrl = "notetaker";
-const collections = ["notes"];
+const databaseUrl = "workout";
+const collections = ["workouts"];
 
 const db = mongojs(databaseUrl, collections);
 
@@ -22,55 +22,35 @@ db.on("error", error => {
 });
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname + "./public/index.html"));
+  res.sendFile(path.join(__dirname + "/public/index.html"));
 });
 
-app.post("/submit", (req, res) => {
-  console.log(req.body);
-
-  db.notes.insert(req.body, (error, data) => {
-    if (error) {
-      res.send(error);
-    } else {
-      res.send(data);
-    }
-  });
+app.get("/exercise", (req, res) => {
+  res.sendFile(path.join(__dirname + "/public/exercise.html"));
 });
 
-app.get("/all", (req, res) => {
-  db.notes.find({}, (error, data) => {
-    if (error) {
-      res.send(error);
-    } else {
-      res.json(data);
-    }
-  });
+app.get("/stats", (req, res) => {
+  res.sendFile(path.join(__dirname + "/public/stats.html"));
 });
 
-app.get("/find/:id", (req, res) => {
-  db.notes.findOne(
-    {
-      _id: mongojs.ObjectId(req.params.id)
-    },
-    (error, data) => {
-      if (error) {
-        res.send(error);
-      } else {
-        res.send(data);
-      }
-    }
-  );
+app.get("/api/workouts", (req, res) => {
+  res.json(db.workouts.findAll({}));
 });
 
-app.post("/update/:id", (req, res) => {
-  db.notes.update(
+app.put("/api/workouts/:id", (req, res) => {
+  db.workouts.update(
     {
       _id: mongojs.ObjectId(req.params.id)
     },
     {
       $set: {
-        title: req.body.title,
-        note: req.body.note,
+        type: req.body.type,
+        name: req.body.name,
+        weight: req.body.weight,
+        sets: req.body.sets,
+        reps: req.body.reps,
+        duration: req.body.duration,
+        distance: req.body.distance,
         modified: Date.now()
       }
     },
@@ -82,31 +62,6 @@ app.post("/update/:id", (req, res) => {
       }
     }
   );
-});
-
-app.delete("/delete/:id", (req, res) => {
-  db.notes.remove(
-    {
-      _id: mongojs.ObjectID(req.params.id)
-    },
-    (error, data) => {
-      if (error) {
-        res.send(error);
-      } else {
-        res.send(data);
-      }
-    }
-  );
-});
-
-app.delete("/clearall", (req, res) => {
-  db.notes.remove({}, (error, response) => {
-    if (error) {
-      res.send(error);
-    } else {
-      res.send(response);
-    }
-  });
 });
 
 app.listen(3000, () => {
